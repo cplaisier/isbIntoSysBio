@@ -1,3 +1,29 @@
+#################################################################
+# @Course: Introduction to Systems Biology                      #
+# @Rscript: introductionToR.R                                   #
+# @Version: 1                                                   #
+# @Author: Chris Plaisier                                       #
+# @Sponsored by:                                                #
+# Nitin Baliga, ISB                                             #
+# Institute for Systems Biology                                 #
+# 1441 North 34th Street                                        #
+# Seattle, Washington  98103-8904                               #
+# (216) 732-2139                                                #
+# @Also Sponsored by:                                           #
+# Luxembourg Systems Biology Grant                              #
+# American Cancer Society Research Scholar Grant                #
+#                                                               #
+# If this program is used in your analysis please mention who   #
+# built it. Thanks. :-)                                         #
+#                                                               #
+# Copyright (C) 2010 by Institute for Systems Biology,          #
+# Seattle, Washington, USA.  All rights reserved.               #
+#                                                               #
+# This source code is distributed under the GNU Lesser          #
+# General Public License, the text of which is available at:    #
+#   http://www.gnu.org/copyleft/lesser.html                     #
+#################################################################
+
 # Set repositories
 setRepositories()
 

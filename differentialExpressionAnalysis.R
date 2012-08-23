@@ -26,7 +26,7 @@
 
 ### Load data for analysis from course web site ### 
 # read.csv can access web links just like any local system file
-d1 = read.csv('http://baliga.systemsbiology.net/events/sysbio/sites/baliga.systemsbiology.net.events.sysbio/files/uploads/cnvData_miRNAExp.csv', header=T, row.names=1)
+d1 = read.csv('http://baliga.systemsbiology.net/events/sysbio/sites/baliga.systemsbiology.net.events.sysbio/files/uploads/cnvData_miRNAExp_0.csv', header=T, row.names=1)
 dim(d1)
 dimnames(d1)
 
@@ -34,7 +34,7 @@ dimnames(d1)
 # Case or control status (1 = case, 0 = control)
 case_control = d1[1,]
 # miRNA expression levels
-mirna = d1[361:894,]
+mirna = d1[325:nrow(d1),]
 
 ### Take a look at the data ###
 mu1 = 1:nrow(mirna)
@@ -96,7 +96,7 @@ o1 = order(p.benjaminiHochberg)
 td1 = data.frame(fold.change = fc[o1], t.stats = t1.t[o1], t.p = t1.p[o1], t.p.bonferroni = p.bonferroni[o1], t.p.benjaminiHochberg = p.benjaminiHochberg[o1])
 
 # Add miRNA names as rownames
-rownames(td1) = sub('exp.','',rownames(mirna))
+rownames(td1) = sub('exp.','',rownames(mirna)[o1])
 
 # Write out results file
 write.csv(td1,file='t.test.fc.mirna.csv')
@@ -107,7 +107,7 @@ write.csv(td1,file='t.test.fc.mirna.csv')
 pdf('volcanoPlotTCGAmiRNAs.pdf')
 
 # Make a volcano plot
-plot(log(fc,2), -log(t1.p, 10) , ylab = '-log10(p-value)', xlab = 'log2(Fold Change)', axes = F, col = rgb(0, 0, 1, 0.25), pch = 20, main = "TCGA miRNA Differential Expresion", xlim = c(-6, 5.5), ylim=c(0, 110))
+plot(log(fc,2), -log(t1.p, 10) , ylab = '-log10(p-value)', xlab = 'log2(Fold Change)', axes = F, col = rgb(0, 0, 1, 0.25), pch = 20, main = "TCGA miRNA Differential Expresion", xlim = c(-6, 5.5), ylim=c(0, 120))
 
 # Get some plotting information for later
 p1 = par()
@@ -124,7 +124,7 @@ par(new=T)
 included = c(intersect(rownames(td1)[which(td1[, 't.p']<=(0.05/534))], rownames(td1)[which(td1[, 'fold.change']>=2)]), intersect(rownames(td1)[which(td1[, 't.p']<=(0.05/534))], rownames(td1)[which(td1[, 'fold.change']<=0.5)]))
 
 # Plot the red highlighting circles
-plot(log(td1[included, 'fold.change'], 2), -log(td1[included, 't.p'], 10), ylab = '-log10(p-value)', xlab = 'log2(Fold Change)', axes = F, col = rgb(1, 0, 0, 1), pch = 1, main = "TCGA miRNA Differential Expresion", cex = 1.5, xlim = c(-6, 5.5), ylim = c(0, 110))
+plot(log(td1[included, 'fold.change'], 2), -log(td1[included, 't.p'], 10), ylab = '-log10(p-value)', xlab = 'log2(Fold Change)', axes = F, col = rgb(1, 0, 0, 1), pch = 1, main = "TCGA miRNA Differential Expresion", cex = 1.5, xlim = c(-6, 5.5), ylim = c(0, 120))
 
 # Add labels as text
 text((log(td1[included, 'fold.change'], 2)), ((-log(td1[included, 't.p'], 10))+-3), included, cex = 0.4)
@@ -136,7 +136,7 @@ dev.off()
 ### Integrating miRNA expression with CNVs ###
 # Subset the original data matrix to get create a matrix of the Copy Number Variation data for each miRNA
 # This was calcualted by tabulating the CNV levels for each miRNA across the genome
-cnv = d1[2:360,]
+cnv = d1[2:324,]
 
 # Run the analysis for hsa-miR-10b
 c1 = cor.test(as.numeric(cnv['cnv.hsa-miR-10b',]), as.numeric(mirna['exp.hsa-miR-10b',]), na.rm = T)
@@ -149,7 +149,7 @@ lm1 = lm(as.numeric(mirna['exp.hsa-miR-10b',]) ~ as.numeric(cnv['cnv.hsa-miR-10b
 abline(lm1,col='red',lty=1,lwd=1)
 
 # Create a matrix to strore the output
-m1 = matrix(nrow=359,ncol=2,dimnames=list(rownames(cnv),c('cor.r','cor.p')))
+m1 = matrix(nrow=nrow(cnv),ncol=2,dimnames=list(rownames(cnv),c('cor.r','cor.p')))
 
 # Run the analysis
 for(i in rownames(cnv)) {
@@ -178,14 +178,18 @@ pdf('corTestCnvExp_miRNA_gbm.pdf')
 # Iterate through all the top 15 miRNAs
 for(mi1 in top15) {
   # Plot correlated miRNA expression vs. copy number variation
-  plot(d2[paste('exp.', mi1, sep = ''),] ~
-    d2[paste('cnv.', mi1, sep = ''),], col = rgb(0, 0, 1, 0.5),
-       pch = 20, xlab = 'Copy Number', ylab = 'Expression', main =
-         paste(mi1, '\n Expression vs. Copy Number'), sep = '')
+  plot(as.numeric(mirna[paste('exp.', mi1, sep = ''),]) ~ as.numeric(cnv[paste('cnv.', mi1, sep = ''),]), col = rgb(0, 0, 1, 0.5), pch = 20, xlab = 'Copy Number', ylab = 'Expression', main = paste(mi1, '\n Expression vs. Copy Number'), sep = '')
   # Make a trend line and plot it
-  lm1 = lm(d2[paste('exp.', mi1, sep = ''),] ~
-    d2[paste('cnv.', mi1, sep = ''),])
+  lm1 = lm(as.numeric(mirna[paste('exp.', mi1, sep = ''),]) ~ as.numeric(cnv[paste('cnv.', mi1, sep = ''),]))
   abline(lm1, col = 'red', lty = 1, lwd = 1)
 }
 # Close PDF device
 dev.off()
+
+
+### Save environment as .RData file ###
+save.image('differentialExpressionAnalysis.RData')
+
+#######################
+### End of Tutorial ###
+#######################
